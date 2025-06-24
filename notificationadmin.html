@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Notes Panel</title>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #ff512f, #dd2476);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+    }
+
+    .input-box {
+      background: rgba(255,255,255,0.1);
+      padding: 20px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      margin-bottom: 30px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 100px;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      resize: none;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      font-weight: bold;
+      margin-top: 10px;
+      border: none;
+      border-radius: 10px;
+      background: #2ecc71;
+      color: white;
+      cursor: pointer;
+    }
+
+    #progress {
+      margin-top: 10px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .note {
+      background: rgba(255,255,255,0.15);
+      padding: 15px;
+      border-radius: 10px;
+      margin: 10px 0;
+      position: relative;
+    }
+
+    .note p {
+      font-weight: bold;
+      margin: 0;
+    }
+
+    .delete {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      color: red;
+      font-weight: bold;
+      cursor: pointer;
+      background: white;
+      padding: 3px 8px;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>📣 Admin Notes Panel</h2>
+
+  <div class="input-box">
+    <textarea id="noteText" placeholder="Enter your note in bold..."></textarea>
+    <button onclick="uploadNote()">Upload Note</button>
+    <div id="progress"></div>
+  </div>
+
+  <div id="noteList" style="width: 100%; max-width: 400px;"></div>
+
+  <script>
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyC7Q12toF3t7NjwlimcDjqMQSvvP0Cufsc",
+      authDomain: "new-shopping-bb7a9.firebaseapp.com",
+      databaseURL: "https://new-shopping-bb7a9-default-rtdb.firebaseio.com",
+      projectId: "new-shopping-bb7a9",
+      storageBucket: "new-shopping-bb7a9.appspot.com",
+      messagingSenderId: "555093095612",
+      appId: "1:555093095612:web:7a12c87d20ce8707c64cb9"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const notesRef = db.ref("notifications");
+
+    function uploadNote() {
+      const note = document.getElementById("noteText").value.trim();
+      const progress = document.getElementById("progress");
+
+      if (!note) {
+        progress.innerText = "❌ Please enter a note.";
+        return;
+      }
+
+      progress.innerText = "Uploading...";
+
+      const noteData = {
+        text: note,
+        timestamp: Date.now()
+      };
+
+      const newNoteRef = notesRef.push();
+      newNoteRef.set(noteData, (error) => {
+        if (error) {
+          progress.innerText = "❌ Upload failed!";
+        } else {
+          progress.innerText = "✅ Note uploaded!";
+          document.getElementById("noteText").value = "";
+        }
+      });
+    }
+
+    // Show notes in real-time
+    notesRef.on("value", (snapshot) => {
+      const list = document.getElementById("noteList");
+      list.innerHTML = "";
+      snapshot.forEach(child => {
+        const note = child.val();
+        const key = child.key;
+        const div = document.createElement("div");
+        div.className = "note";
+        div.innerHTML = `
+          <p>${note.text}</p>
+          <div class="delete" onclick="deleteNote('${key}')">×</div>
+        `;
+        list.appendChild(div);
+      });
+    });
+
+    function deleteNote(key) {
+      if (confirm("Delete this note?")) {
+        notesRef.child(key).remove();
+      }
+    }
+  </script>
+
+</body>
+</html>

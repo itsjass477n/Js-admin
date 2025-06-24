@@ -1,0 +1,83 @@
+<!DOCTYPE html><html>
+<head>
+  <title>User Dashboard</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+      color: white;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .total-users {
+      text-align: center;
+      font-size: 20px;
+      margin-bottom: 20px;
+    }
+    .user-card {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 15px;
+      margin: 10px 0;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    }
+    .user-card p {
+      margin: 5px 0;
+      font-size: 15px;
+    }
+  </style>
+</head>
+<body>
+  <h1>All Registered Users</h1>
+  <div class="total-users">Loading total users...</div>
+  <div id="userList"></div>  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyC7Q12toF3t7NjwlimcDjqMQSvvP0Cufsc",
+      authDomain: "new-shopping-bb7a9.firebaseapp.com",
+      databaseURL: "https://new-shopping-bb7a9-default-rtdb.firebaseio.com",
+      projectId: "new-shopping-bb7a9",
+      storageBucket: "new-shopping-bb7a9.appspot.com",
+      messagingSenderId: "555093095612",
+      appId: "1:555093095612:web:7a12c87d20ce8707c64cb9"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const userListDiv = document.getElementById("userList");
+    const totalUsersDiv = document.querySelector(".total-users");
+
+    db.ref("users").once("value").then(snapshot => {
+      const users = snapshot.val();
+      let count = 0;
+
+      userListDiv.innerHTML = "";
+      for (let key in users) {
+        count++;
+        const user = users[key];
+        const card = document.createElement("div");
+        card.className = "user-card";
+        card.innerHTML = `
+          <p><strong>Name:</strong> ${user.name || "-"}</p>
+          <p><strong>Email:</strong> ${user.email || "-"}</p>
+          <p><strong>Password:</strong> ${user.password || "-"}</p>
+          <p><strong>Mobile:</strong> ${user.mobile || "-"}</p>
+          <p><strong>Active Time:</strong> ${user.activeTime || "-"}</p>
+          <p><strong>Last Seen:</strong> ${user.lastSeen || "-"}</p>
+        `;
+        userListDiv.appendChild(card);
+      }
+
+      totalUsersDiv.innerText = `Total Users: ${count}`;
+    }).catch(error => {
+      totalUsersDiv.innerText = "Failed to load user data.";
+      console.error("Error fetching users:", error);
+    });
+  </script></body>
+</html>
